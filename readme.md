@@ -3,11 +3,14 @@ Python (avec bibliothèques comme BeautifulSoup, Scrapy, Selenium)
 
 
 the scraper
+
 I script then enter to the website
 It takes html code source
 Then extract data and forums...etc
 And classify it
 To be useful data
+<img width="675" height="201" alt="image" src="https://github.com/user-attachments/assets/8c910af7-6ed9-4dfb-bb1a-ef74b6ea3016" />
+
 
 
 
