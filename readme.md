@@ -1,40 +1,48 @@
-# **E-Price Tracker**
+# **E-Job Tracker**
 
- **Compare and Monitor Product Prices Across Multiple Websites**
+**Compare and Monitor Job Offers Across Multiple Countries**
 
 ---
 
 ##  Project Idea
 
-Our project aims to **scrape product data** (like name, price, and availability) from **three different e-commerce websites**.
+Our project aims to **scrape job offer data** (such as job title, company name, location, and job link) from **different job websites in three different countries**.  
 
-Each team member will handle **one website** using Python web scraping tools .
+Each team member is responsible for **one country**, using Python web scraping tools to extract job offers from a popular local job platform.  
 
-Then, we will **combine all the scraped data** into a central database or file and display it in a **simple website** that allows users to:
-
-- Compare prices for the same product across multiple stores.
-- View when a product’s price has changed.
-- See which store currently offers the lowest price.
+All the collected data will be **combined and displayed in a desktop application**, allowing users to:
+ 
+- **Compare job offers** across different countries.  
+- **Track new job postings** and observe hiring trends internationally.  
 
 ---
 
 ##  How It Works
 
-1. **Scraping Phase:**
-    - Each member writes a Python script that extracts product name, price, and link from one website.
-    - The data is cleaned and stored in a shared format (like a CSV file or a database).
-2. **Data Storage:**
-    - All scripts update the same database (e.g., SQLite or MongoDB).
-    - Each time you re-run the scrapers (daily or weekly), new data is stored with timestamps.
-3. **Analysis Phase:**
-    - The backend compares old and new prices to detect changes.
-    - It calculates which website currently has the lowest price for each product.
-4. **Website (Frontend):**
-    - Built with Flask or Streamlit .
-    - Displays the products, current prices
+### 1. Scraping Phase  
+- Each member writes a Python script that extracts job title, company name, location, and job link from a website in their assigned country.  
+- The data is cleaned and saved in a consistent format (CSV file or database).  
 
-##  Expected Output
+### 2. Data Storage  
+- All scripts store their data in a shared database.  
+- Each update includes timestamps to track when each job was scraped.  
 
-- A functional website that compares product prices from 3 e-commerce sites.
-- Ability to update data regularly.
-- A report showing price evolution over time.
+### 3. Analysis Phase  
+
+- It can show **statistics and trends**, such as which countries have the most openings or which companies hire frequently.  
+
+### 4. Desktop Application  
+ 
+- Provides an interactive interface to **view, search, and filter job offers** .  
+- Includes clickable links to open the job listing directly in a browser.  
+
+---
+
+## Expected Output
+
+- A **functional desktop application** that lists and compares job offers from **three countries**.  
+- Ability to **update job data regularly**.  
+- A **local database or CSV file** storing all scraped job data.  
+-  **statistics** showing international job trends.  
+
+
