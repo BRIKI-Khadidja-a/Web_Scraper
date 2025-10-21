@@ -66,7 +66,7 @@ try:
         print(f" Company     : {company[i]}")
         print(f" Location    : {location[i]}")
         print(f" Date Posted : {date_posted[i]}")
-        print(f" Link        : {links[i]}")
+        print(f" url        : {links[i]}")
         print("-" * 50)
 
     print(f"\n✓ Total jobs trouvés sur toutes les pages: {len(title)}")
