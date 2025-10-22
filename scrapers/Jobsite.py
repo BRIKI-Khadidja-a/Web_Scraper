@@ -1,5 +1,5 @@
 import sqlite3
-from database.db import insert_job
+from database.db import create_db, insert_job
 import requests
 from bs4 import BeautifulSoup
 import lxml
@@ -7,6 +7,9 @@ import lxml
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
+
+#crée la base de données si elle n'existe pas
+create_db() 
 
 page_number = 0
 
@@ -19,6 +22,7 @@ try:
         if result.status_code != 200 or "Search results not found" in result.text:
             break
 
+        # Analyser le contenu HTML de la page
         soup = BeautifulSoup(result.content, "lxml")
         titles = soup.find_all("h2", class_="css-193uk2c")
         companies = soup.find_all("a", class_="css-ipsyv7")
@@ -26,18 +30,27 @@ try:
 
         if not titles:
             break
-
+ 
+        # Récupérer les données des offres de travail:
+        
         length = min(len(titles), len(companies), len(locations))
         for i in range(length):
-            # Récupération des données
+            
+            
             title_text = titles[i].get_text(strip=True)
+            #nom de l'entreprise
             company_text = companies[i].get_text(strip=True)
+            
+            #localisation
             location_text = locations[i].get_text(strip=True)
 
             title_parent = titles[i].find_parent()
+            
+            #date
             date_elem = title_parent.find("div", class_=["css-eg55jf", "css-1jldrig"])
             date_text = date_elem.get_text(strip=True) if date_elem else "N/A"
 
+            #lien de l'offre
             job_link_elem = titles[i].find("a")
             job_link = job_link_elem.attrs.get('href', '#') if job_link_elem else "#"
             if job_link.startswith('/'):
@@ -59,6 +72,7 @@ try:
         page_number += 1
 
     print("Scraping terminé, résultats enregistrés dans jobs.db")
+    
 
 except requests.exceptions.RequestException as e:
     print(f"Erreur de requête: {e}")
