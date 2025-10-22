@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from database.db import create_db, insert_job
 
 # initialize Chrome WebDriver 
 service = Service(ChromeDriverManager().install())
@@ -31,7 +32,7 @@ input_element.send_keys(search_job + Keys.ENTER)
 
 time.sleep(2)  # brief pause after Enter
 
-
+create_db() # create the database table if it doesn't exist
 jobs_number =0
 page = 1
 
@@ -62,7 +63,16 @@ while True:
                
                # extract posting date
                date_posted = job.find_elements(By.CSS_SELECTOR, 'div.MuiStack-root.mui-1lwc51h')[1].text
-                
+               
+               job_data = {
+                    'source':"Emploitic",
+                    'title': title,
+                    'company': company,
+                    'location': location,
+                    'date_posted': date_posted,
+                    'url': job_link
+                }
+               insert_job(job_data)
                jobs_number+=1
                print(f"Job number : {jobs_number}")
                print(f"\nJob {index} on Page {page}")
@@ -76,7 +86,7 @@ while True:
             except Exception as e:
                 print(f"Error extracting data from job {index}: {e}")
 
-        #check if the next page button is not disabled
+        # check if the next page button is not disabled
         try:
             # find the next button
             next_button = driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Go to next page"]')
@@ -94,11 +104,11 @@ while True:
             # reference to current job item for staleness check
             first_job = job_items[0]
             
-            #click the next button
+            # click the next button
             next_button.click()
             page += 1
             
-            #wait for page content to refresh
+            # wait for page content to refresh
             try:
                 wait.until(EC.staleness_of(first_job))
                 time.sleep(2)
