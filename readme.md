@@ -46,3 +46,60 @@ All the collected data will be **combined and displayed in a desktop application
 -  **statistics** showing international job trends.  
 
 
+# **Installation & Setup Guide**
+
+---
+
+## Prerequisites
+
+Before running the E-Job Tracker application, ensure you have the following installed on your system:
+
+- **Python 3.8 or higher** 
+- **pip** (Python package installer) - Usually comes with Python
+- **Git** (optional) - For cloning the repository
+
+---
+
+## Installation Steps
+
+### 1. Clone or Download the Project
+```bash
+# If using Git
+git clone https://github.com/BRIKI-Khadidja-a/Web_Scraper.git
+cd Web_Scraper
+
+# Or download and extract the ZIP file from the repository
+```
+### 2. Create a Virtual Environment (Recommended)
+
+Creating a virtual environment helps isolate project dependencies:
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+
+# On macOS/Linux:
+source venv/bin/activate
+```
+
+### 3. Install Required Dependencies
+
+All necessary Python packages are listed in the `requirements.txt` file. Install them using:
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Running the Scrapers
+
+Each country has its own scraper module.You can each scraper individually :
+
+### Algeria (Emploitic)
+```bash
+python -m scrapers.emploitic
+```
+
