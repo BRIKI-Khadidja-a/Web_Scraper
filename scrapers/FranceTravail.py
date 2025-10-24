@@ -19,8 +19,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from database.db import create_db, insert_job
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def normalize_text(s):
@@ -104,7 +104,7 @@ def main():
     # Crée la base de données si elle n’existe pas encore
     create_db()
 
-    chrome_driver_path = r"C:\Users\BAB AL SAFA\Desktop\WebScraping\chromedriver.exe"
+   
 
     options = Options()
     options.add_argument("--headless=new")
@@ -112,7 +112,7 @@ def main():
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1600,1000")
 
-    service = Service(chrome_driver_path)
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     wait = WebDriverWait(driver, 10)
 
