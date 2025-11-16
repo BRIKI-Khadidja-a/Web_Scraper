@@ -154,5 +154,4 @@ WEB_SCRAPER/
 ├── pyvenv.cfg                              # Virtual environment configuration
 ├── readme.md                               # Project documentation
 └── requirements.txt                        # Python dependencies
->>>>>>> ffc2856809e4730c3f48d7ac0ca6dde480a15911
 ```
