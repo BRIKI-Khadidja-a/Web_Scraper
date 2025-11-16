@@ -102,4 +102,18 @@ Each country has its own scraper module.You can each scraper individually :
 ```bash
 python -m scrapers.emploitic
 ```
+### France (France Travail)
+```bash
+python -m scrapers.FranceTravail
+```
+### Wuzzuf ( Egypt )
+```bash
+python -m scrapers.Jobsite
+```
 
+---
+
+## Running the APP
+```bash
+streamlit run app/Dashboard.py
+```

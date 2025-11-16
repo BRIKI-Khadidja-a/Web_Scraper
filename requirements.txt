@@ -4,3 +4,4 @@ lxml
 selenium
 webdriver-manager
 openpyxl
+plotly
