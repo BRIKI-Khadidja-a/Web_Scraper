@@ -103,3 +103,37 @@ Each country has its own scraper module.You can each scraper individually :
 python -m scrapers.emploitic
 ```
 
+WEB_SCRAPER/
+│
+├── app/                          # Desktop application
+│   ├── pages/                    # Application pages/screens
+│   │   ├── 1_📊_Browse.py       # Browse jobs page
+│   │   ├── 2_📈_Analytic.py     # Analytics/statistics page
+│   │   ├── 3_📥_Export.py       # Export data page
+│   │   └── 4_ℹ️_About.py        # About page
+│   │
+│   ├── utils/                    # Utility functions
+│   │   └── Dashboard.py          # Dashboard components
+│   │
+│   └── Dashboard.py              # Main dashboard application
+│
+├── database/                     # Database files
+│   ├── __pycache__/             # Python cache files
+│   ├── __init__.py              # Database package initializer
+│   ├── db.py                    # Database connection and operations
+│   └── jobs.db                  # SQLite database file
+│
+├── scrapers/                     # Web scraping modules
+│   ├── __pycache__/             # Python cache files
+│   ├── emploitic.py             # Algeria job scraper (Emploitic)
+│   ├── FranceTraval.py          # France job scraper
+│   └── Jobsite.py               # Other country job scraper
+│
+├── tools/                        # Additional tools and utilities
+│
+├── venv/                         # Virtual environment
+│
+├── .gitignore                    # Git ignore file
+├── readme.md                     # Project documentation
+└── requirements.txt              # Python dependencies
+
