@@ -102,6 +102,7 @@ Each country has its own scraper module.You can each scraper individually :
 ```bash
 python -m scrapers.emploitic
 ```
+<<<<<<< HEAD
 ### France (France Travail)
 ```bash
 python -m scrapers.FranceTravail
@@ -116,4 +117,42 @@ python -m scrapers.Jobsite
 ## Running the APP
 ```bash
 streamlit run app/Dashboard.py
+=======
+## 📁 Project Structure
+```
+WEB_SCRAPER/
+│
+├── app/                                    # Desktop application
+│   ├── pages/                              # Application pages/screens
+│   │   ├── 1_Browse.py                    # Browse jobs page
+│   │   ├── 2_Analytic.py                  # Analytics/statistics page
+│   │   ├── 3_Export.py                    # Export data page
+│   │   └── 4_About.py                     # About page
+│   │
+│   ├── utils/                              # Utility functions
+│   │   └── Dashboard.py                    # Dashboard components
+│   │
+│   └── Dashboard.py                        # Main dashboard application
+│
+├── database/                               # Database files
+│   ├── __pycache__/                       # Python cache files
+│   ├── __init__.py                        # Database package initializer
+│   ├── db.py                              # Database connection and operations
+│   └── jobs.db                            # SQLite database file
+│
+├── scrapers/                               # Web scraping modules
+│   ├── __pycache__/                       # Python cache files
+│   ├── emploitic.py                       # Algeria job scraper (Emploitic)
+│   ├── FranceTraval.py                    # France job scraper
+│   └── Jobsite.py                         # Other country job scraper
+│
+├── tools/                                  # Additional tools and utilities
+│
+├── venv/                                   # Virtual environment
+│
+├── .gitignore                              # Git ignore file
+├── pyvenv.cfg                              # Virtual environment configuration
+├── readme.md                               # Project documentation
+└── requirements.txt                        # Python dependencies
+>>>>>>> ffc2856809e4730c3f48d7ac0ca6dde480a15911
 ```
