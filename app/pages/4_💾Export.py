@@ -48,10 +48,42 @@ def convert_to_csv(df):
 
 # Fonction pour convertir DataFrame en Excel
 def convert_to_excel(df):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Jobs')
-    return output.getvalue()
+    """Convertit un DataFrame en fichier Excel avec gestion d'erreurs"""
+    try:
+        output = io.BytesIO()
+        
+        # Créer une copie pour éviter de modifier l'original
+        df_export = df.copy()
+        
+        # Gérer les valeurs NaT/NaN dans les dates
+        for col in df_export.select_dtypes(include=['datetime64']).columns:
+            df_export[col] = df_export[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df_export.to_excel(writer, index=False, sheet_name='Jobs')
+            
+            # Optionnel : Ajuster la largeur des colonnes
+            worksheet = writer.sheets['Jobs']
+            for column in worksheet.columns:
+                max_length = 0
+                column = [cell for cell in column]
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+                adjusted_width = min(max_length + 2, 50)
+                worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
+        
+        return output.getvalue()
+    
+    except ImportError:
+        st.error("❌ Le module 'openpyxl' n'est pas installé. Installez-le avec: pip install openpyxl")
+        return None
+    except Exception as e:
+        st.error(f"❌ Erreur lors de la conversion Excel : {e}")
+        return None
 
 # Fonction pour convertir DataFrame en JSON
 def convert_to_json(df):
