@@ -118,20 +118,17 @@ analyze market trends, or export data for your research.
 """
 )
 # create 4 buttons for navigation
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     if st.button("📊 Browse Jobs"):
         st.switch_page("./pages/1_📊Browse.py")
 with col2:
-    if st.button("🔍 Search Jobs"):
-        st.switch_page("./pages/2_🔍Search.py")
-with col3:
     if st.button("📈 Market Analytics"):
-        st.switch_page("./pages/3_📈Analystic.py")
-with col4:
+        st.switch_page("./pages/2_📈Analystic.py")
+with col3:
     if st.button("💾 Export Jobs"):
-        st.switch_page("./pages/4_💾Export.py")
+        st.switch_page("./pages/3_💾Export.py")
 
 # Footer
 st.divider()
