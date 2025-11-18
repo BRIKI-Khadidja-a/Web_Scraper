@@ -19,7 +19,7 @@ import sys, os
 
 # --- Import de la base de données ---
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database.db import create_db, insert_job
+from database.db import insert_job
 from webdriver_manager.chrome import ChromeDriverManager
 
 
@@ -127,8 +127,6 @@ def extract_from_card(card):
 
 def main():
     print("===  Récupération des offres en Cyber Sécurité... ===")
-
-    create_db()
 
     options = Options()
     # options.add_argument("--headless=new")  # Active le mode sans interface si besoin

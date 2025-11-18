@@ -75,25 +75,26 @@ else:
         # Calculate pagination
         total_pages = (len(filtered_df) // items_per_page) + (1 if len(filtered_df) % items_per_page > 0 else 0)
         
-        if 'page' not in st.session_state:
-            st.session_state.page = 1
         
+        if 'current_page' not in st.session_state:
+            st.session_state.current_page = 1
+        
+        # Pagination controls
         col1, col2, col3 = st.columns([1, 2, 1])
+        
         with col1:
-            if st.button("◀ Previous", disabled=(st.session_state.page == 1)):
-                st.session_state.page -= 1
-                st.rerun()
+            if st.button("◀ Previous", disabled=(st.session_state.current_page == 1), key="prev_btn"):
+                st.session_state.current_page = max(1, st.session_state.current_page - 1)
         
         with col2:
-            st.write(f"Page {st.session_state.page} of {total_pages}")
+            st.write(f"Page {st.session_state.current_page} of {total_pages}")
         
         with col3:
-            if st.button("Next ▶", disabled=(st.session_state.page >= total_pages)):
-                st.session_state.page += 1
-                st.rerun()
+            if st.button("Next ▶", disabled=(st.session_state.current_page >= total_pages), key="next_btn"):
+                st.session_state.current_page = min(total_pages, st.session_state.current_page + 1)
         
         # Calculate start and end indices
-        start_idx = (st.session_state.page - 1) * items_per_page
+        start_idx = (st.session_state.current_page - 1) * items_per_page
         end_idx = start_idx + items_per_page
         
         # Get current page data
@@ -128,5 +129,3 @@ else:
         st.sidebar.metric("Unique Companies", filtered_df['company'].nunique())
         st.sidebar.metric("Unique Locations", filtered_df['location'].nunique())
         st.sidebar.metric("Data Sources", filtered_df['source'].nunique())
-        
-       

@@ -1,33 +1,44 @@
 import streamlit as st
-import sqlite3
 import pandas as pd
-from pathlib import Path
+from supabase import create_client
+from dotenv import load_dotenv
+import os
 
-# Database path
-DB_PATH = Path("database/jobs.db")
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# create the client
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # data loading functions
-# the decorator below tells Streamlit to cache (memorize) the result of this function
-@st.cache_data(ttl=3600) 
+@st.cache_data(ttl=3600)# the decorator tells Streamlit to cache the result of this function
 def load_all_jobs():
-    conn = sqlite3.connect(DB_PATH)
-    query = "SELECT * FROM jobs ORDER BY scraped_at DESC"
-    df = pd.read_sql_query(query, conn)
-    conn.close()
+    response = supabase.table('jobs').select('*').order('scraped_at', desc=True).execute()
+    df = pd.DataFrame(response.data)
     return df
 
-# retrieve basic statistics about the jobs dataset
+
 @st.cache_data(ttl=3600)
 def get_statistics():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
     stats = {}
-    stats['total_jobs'] = cursor.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
-    stats['sources'] = cursor.execute("SELECT COUNT(DISTINCT source) FROM jobs").fetchone()[0]
-    stats['companies'] = cursor.execute("SELECT COUNT(DISTINCT company) FROM jobs").fetchone()[0]
-    stats['locations'] = cursor.execute("SELECT COUNT(DISTINCT location) FROM jobs").fetchone()[0]
     
-    conn.close()
+    # jobs count
+    total_response = supabase.table('jobs').select('*', count='exact').execute()
+    stats['total_jobs'] = total_response.count
+    
+    # sources count
+    sources_response = supabase.table('jobs').select('source').execute()
+    stats['sources'] = pd.DataFrame(sources_response.data)['source'].nunique()
+    
+    # companies count
+    companies_response = supabase.table('jobs').select('company').execute()
+    stats['companies'] = pd.DataFrame(companies_response.data)['company'].nunique()
+    
+    # locations count
+    locations_response = supabase.table('jobs').select('location').execute()
+    stats['locations'] = pd.DataFrame(locations_response.data)['location'].nunique()
+    
     return stats

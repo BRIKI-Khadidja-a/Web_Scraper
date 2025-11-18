@@ -9,7 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from database.db import create_db, insert_job
+from database.db import insert_job
 
 # initialize Chrome WebDriver 
 service = Service(ChromeDriverManager().install())
@@ -32,7 +32,6 @@ input_element.send_keys(search_job + Keys.ENTER)
 
 time.sleep(2)  # brief pause after Enter
 
-create_db() # create the database table if it doesn't exist
 jobs_number =0
 page = 1
 
