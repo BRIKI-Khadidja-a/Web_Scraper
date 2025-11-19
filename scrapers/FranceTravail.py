@@ -15,13 +15,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import sys, os
+import sys
+import os
 
 # --- Import de la base de données ---
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.db import insert_job
 from webdriver_manager.chrome import ChromeDriverManager
-
 
 BASE = "https://candidat.francetravail.fr"
 
@@ -36,40 +36,36 @@ def extract_from_card(card):
 
     # --- Titre ---
     try:
-        title = normalize_text(card.find_element(By.CSS_SELECTOR, "span.media-heading-title").text)
-    except:
+        title = normalize_text(
+            card.find_element(By.CSS_SELECTOR, "span.media-heading-title").text
+        )
+    except Exception:
         title = "—"
 
-        # --- Entreprise + Lieu ---
+    # --- Entreprise + Lieu ---
     try:
         subtext = card.find_element(By.CSS_SELECTOR, "p.subtext")
-
-        # cas où il y a une entreprise + span
         spans = subtext.find_elements(By.TAG_NAME, "span")
         if spans:
-            # Récupère le texte du span (ex : "95 - Éragny" ou "31 - Toulouse")
             location_text = normalize_text(spans[-1].text)
             location = re.sub(r"^\d+\s*-*\s*", "", location_text).strip()
-
-            # Essaie de récupérer le texte avant le span (l’entreprise)
             full_text = normalize_text(subtext.text)
             company_part = full_text.replace(spans[-1].text, "").strip(" -\u00a0")
             company = company_part if company_part else "—"
         else:
-            # Cas extrême : aucun <span> (rare)
             full_text = normalize_text(subtext.text)
             company = full_text if full_text else "—"
             location = "—"
-
-    except Exception as e:
+    except Exception:
         company, location = "—", "—"
 
     # --- Date ---
     date_posted = None
     try:
-        date_texte = normalize_text(card.find_element(By.CSS_SELECTOR, "p.date").text.lower())
+        date_texte = normalize_text(
+            card.find_element(By.CSS_SELECTOR, "p.date").text.lower()
+        )
         aujourd_hui = datetime.now().date()
-
         if "aujourd" in date_texte:
             date_posted = aujourd_hui
         elif "hier" in date_texte:
@@ -83,9 +79,18 @@ def extract_from_card(card):
             match = re.search(r"(\d{1,2}) ([a-zéû]+) (\d{4})", date_texte)
             if match:
                 mois_fr = {
-                    "janvier": 1, "février": 2, "mars": 3, "avril": 4, "mai": 5, "juin": 6,
-                    "juillet": 7, "août": 8, "septembre": 9, "octobre": 10,
-                    "novembre": 11, "décembre": 12
+                    "janvier": 1,
+                    "février": 2,
+                    "mars": 3,
+                    "avril": 4,
+                    "mai": 5,
+                    "juin": 6,
+                    "juillet": 7,
+                    "août": 8,
+                    "septembre": 9,
+                    "octobre": 10,
+                    "novembre": 11,
+                    "décembre": 12,
                 }
                 jour = int(match.group(1))
                 mois = mois_fr.get(match.group(2), 1)
@@ -93,7 +98,7 @@ def extract_from_card(card):
                 date_posted = datetime(annee, mois, jour).date()
             else:
                 date_posted = aujourd_hui
-    except:
+    except Exception:
         date_posted = None
 
     # --- URL ---
@@ -121,7 +126,7 @@ def extract_from_card(card):
         "company": company,
         "location": location,
         "date_posted": date_posted,
-        "url": url
+        "url": url,
     }
 
 
@@ -154,10 +159,25 @@ def main():
             cards = driver.find_elements(By.CSS_SELECTOR, "li.result")
             print(f"→ {len(cards)} offres visibles actuellement.")
 
-            for card in cards[len(offres):]:
+            for card in cards[len(offres) :]:
                 offre = extract_from_card(card)
+
+                # Conversion date -> string
+                if offre["date_posted"]:
+                    offre["date_posted"] = offre["date_posted"].isoformat()
+                else:
+                    offre["date_posted"] = datetime.now().date().isoformat()
+
                 offres.append(offre)
-                insert_job(offre)  # Insertion en base
+
+                # Gestion des doublons
+                try:
+                    insert_job(offre)
+                except Exception as e:
+                    if "duplicate key" in str(e):
+                        print(f"⚠️  Offre déjà en base (ignorée)")
+                    else:
+                        print(f"❌ Erreur : {e}")
 
             # --- Bouton "Afficher les 20 offres suivantes" ---
             try:
@@ -165,14 +185,24 @@ def main():
                 time.sleep(2)
 
                 bouton_suivant = wait.until(
-                    EC.element_to_be_clickable((By.XPATH, "//a[contains(., 'Afficher les 20 offres suivantes')]"))
+                    EC.element_to_be_clickable(
+                        (
+                            By.XPATH,
+                            "//a[contains(., 'Afficher les 20 offres suivantes')]",
+                        )
+                    )
                 )
 
-                driver.execute_script("arguments[0].scrollIntoView(true);", bouton_suivant)
+                driver.execute_script(
+                    "arguments[0].scrollIntoView(true);", bouton_suivant
+                )
                 time.sleep(1)
                 driver.execute_script("arguments[0].click();", bouton_suivant)
 
-                wait.until(lambda d: len(d.find_elements(By.CSS_SELECTOR, "li.result")) > len(cards))
+                wait.until(
+                    lambda d: len(d.find_elements(By.CSS_SELECTOR, "li.result"))
+                    > len(cards)
+                )
                 page += 1
 
             except TimeoutException:
