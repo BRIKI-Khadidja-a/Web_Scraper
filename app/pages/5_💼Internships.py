@@ -338,9 +338,7 @@ def student_page():
 
                     if submit:
                         resume_data = (
-                            base64.b64encode(resume_file.read()).decode("utf-8")
-                            if resume_file
-                            else None
+                            "\\x" + resume_file.read().hex() if resume_file else None
                         )
                         try:
                             supabase.table("applications").insert(
@@ -967,6 +965,30 @@ def show_applications(user_id):
                     st.write(app["cover_letter"])
 
                 st.divider()
+
+                resume_data = app.get("resume_pdf")
+                if resume_data:
+                    try:
+                        resume_bytes = None
+                        if isinstance(resume_data, str) and resume_data.startswith("\\x"):
+                            resume_bytes = bytes.fromhex(resume_data[2:])
+                        else:
+                            resume_clean = "".join(str(resume_data).split())
+                            padding = len(resume_clean) % 4
+                            if padding:
+                                resume_clean += "=" * (4 - padding)
+                            resume_bytes = base64.b64decode(resume_clean)
+                        if resume_bytes:
+                            st.download_button(
+                                "⬇️ Download resume",
+                                data=resume_bytes,
+                                file_name=f"resume_{student_name.replace(' ', '_')}.pdf",
+                                mime="application/pdf",
+                                key=f"download_resume_{app['id']}",
+                                use_container_width=True,
+                            )
+                    except Exception as e:
+                        st.warning(f"Unable to render resume: {str(e)}")
 
                 # Actions
                 col_accept, col_reject, col_review = st.columns(3)
