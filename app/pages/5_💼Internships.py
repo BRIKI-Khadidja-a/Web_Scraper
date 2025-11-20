@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client
 import os
+import base64
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -187,14 +188,177 @@ def register_page():
 
 
 def student_page():
-    """display student dashboard"""
-    st.title("Student Dashboard")
+    """Display the student dashboard with internship listings and application flow"""
+    if "user" not in st.session_state or not st.session_state.user:
+        st.error("You must be logged in to view this page.")
+        return
 
-    if st.button("Logout"):
-        supabase.auth.sign_out()
-        st.session_state.user = None
-        st.session_state.page = "login"
-        st.rerun()
+    user_id = st.session_state.user.id
+
+    # Sidebar actions
+    with st.sidebar:
+        st.header("Student Menu")
+        st.caption("Browse internships and track your applications.")
+        if st.button("🚪 Logout", use_container_width=True):
+            supabase.auth.sign_out()
+            st.session_state.user = None
+            st.session_state.page = "login"
+            st.rerun()
+
+    # Fetch student profile for personalization
+    profile_data = None
+    try:
+        profile_res = (
+            supabase.table("student_profiles").select("*").eq("id", user_id).execute()
+        )
+        profile_data = profile_res.data[0] if profile_res.data else None
+    except Exception as e:
+        st.warning(f"Unable to load profile information: {str(e)}")
+
+    first_name = profile_data["first_name"] if profile_data else "Student"
+    st.title(f"👋 Welcome back, {first_name}!")
+    if profile_data:
+        st.caption(
+            f"{profile_data.get('major', 'N/A')} · {profile_data.get('university', 'Unknown University')}"
+        )
+
+    st.divider()
+
+    # Load internships and existing applications
+    try:
+        internships_res = (
+            supabase.table("internships")
+            .select("*")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        internships = internships_res.data or []
+    except Exception as e:
+        st.error(f"Unable to load internships: {str(e)}")
+        return
+
+    try:
+        applications_res = (
+            supabase.table("applications")
+            .select("*")
+            .eq("student_id", user_id)
+            .execute()
+        )
+        applications = {app["internship_id"]: app for app in (applications_res.data or [])}
+    except Exception as e:
+        st.warning(f"Unable to load your applications: {str(e)}")
+        applications = {}
+
+    # Fetch company data for labels
+    company_map = {}
+    company_ids = list({internship["company_id"] for internship in internships})
+    if company_ids:
+        try:
+            companies_res = (
+                supabase.table("company_profiles")
+                .select("id, company_name, location, phone")
+                .in_("id", company_ids)
+                .execute()
+            )
+            company_map = {company["id"]: company for company in (companies_res.data or [])}
+        except Exception as e:
+            st.warning(f"Unable to load company details: {str(e)}")
+
+    # Filters
+    col_search, col_type, col_location = st.columns([2, 1, 1])
+    search_query = col_search.text_input(
+        "🔍 Search internships", placeholder="Search by title, company or location"
+    ).strip()
+    job_type_filter = col_type.selectbox("Work type", ["All", "on-site", "remote", "hybrid"])
+    locations = sorted({i["location"] for i in internships if i.get("location")})
+    location_filter = col_location.selectbox("Location", ["All"] + locations) if locations else "All"
+
+    def matches_filters(internship):
+        if search_query:
+            company = company_map.get(internship["company_id"], {})
+            target = " ".join(
+                [
+                    internship.get("title", ""),
+                    internship.get("location", ""),
+                    company.get("company_name", ""),
+                ]
+            ).lower()
+            if search_query.lower() not in target:
+                return False
+        if job_type_filter != "All" and internship.get("job_type") != job_type_filter:
+            return False
+        if location_filter != "All" and internship.get("location") != location_filter:
+            return False
+        return True
+
+    filtered_internships = [internship for internship in internships if matches_filters(internship)]
+
+    st.subheader(f"Available Internships ({len(filtered_internships)})")
+    if not filtered_internships:
+        st.info("No internships match your filters yet. Try adjusting your search.")
+        return
+
+    for internship in filtered_internships:
+        company = company_map.get(internship["company_id"], {})
+        application = applications.get(internship["id"])
+        with st.container():
+            st.markdown(f"### {internship['title']} · {company.get('company_name', 'Company')}")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.caption(f"📍 {internship.get('location', 'N/A')}")
+                st.caption(f"🧭 Duration: {internship.get('duration', 'N/A')}")
+            with col2:
+                st.caption(f"🛠️ Type: {internship.get('job_type', 'N/A')}")
+                st.caption(f"💰 Salary: {internship.get('salary') or 'Not specified'}")
+            with col3:
+                if internship.get("spots_available"):
+                    st.caption(f"👥 Spots: {internship['spots_available']}")
+                if internship.get("application_deadline"):
+                    st.caption(f"⏰ Apply before: {internship['application_deadline']}")
+
+            st.write("**Description**")
+            st.write(internship.get("description", "No description provided."))
+            st.write("**Requirements**")
+            st.write(internship.get("requirements", "No requirements provided."))
+
+            if application:
+                status = application.get("status", "pending").capitalize()
+                st.success(f"You already applied · Status: {status}")
+            else:
+                with st.form(key=f"apply_form_{internship['id']}"):
+                    cover_letter = st.text_area(
+                        "Cover letter (optional)",
+                        placeholder="Explain why you're a good fit for this internship.",
+                        key=f"cover_{internship['id']}",
+                    )
+                    resume_file = st.file_uploader(
+                        "Upload resume (PDF, optional)", type=["pdf"], key=f"resume_{internship['id']}"
+                    )
+                    submit = st.form_submit_button("📤 Apply now", use_container_width=True)
+
+                    if submit:
+                        resume_data = (
+                            base64.b64encode(resume_file.read()).decode("utf-8")
+                            if resume_file
+                            else None
+                        )
+                        try:
+                            supabase.table("applications").insert(
+                                {
+                                    "internship_id": internship["id"],
+                                    "student_id": user_id,
+                                    "cover_letter": cover_letter.strip() if cover_letter else None,
+                                    "resume_pdf": resume_data,
+                                    "status": "pending",
+                                    "applied_at": datetime.utcnow().isoformat(),
+                                }
+                            ).execute()
+                            st.success("Application submitted! 🎉")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Unable to submit application: {str(e)}")
+
+            st.divider()
 
 
 from datetime import datetime
